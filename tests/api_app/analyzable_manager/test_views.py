@@ -64,6 +64,7 @@ class TestAnalyzablesViewSet(CustomViewSetTestCase):
             finished_analysis_time=datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc),
             user=self.user,
         )
+
         self.job3.add_child(
             user=self.user,
             analyzable=self.an,
