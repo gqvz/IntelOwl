@@ -1,4 +1,6 @@
-permissions: read-all
+permissions:
+  contents: read
+  actions: write
 name: Docker Build Cache
 
 on:
@@ -19,6 +21,17 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Restore buildkit cache
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          cache-map: |
+            {
+              "/var/cache/apt": "apt-cache",
+              "/var/lib/apt": "apt-lib",
+              "/root/.cache/pip": "pip-cache",
+              "/root/.npm": "npm-cache"
+            }
 
       - name: Build
         uses: docker/build-push-action@v6
