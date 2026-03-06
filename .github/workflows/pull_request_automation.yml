@@ -82,19 +82,11 @@ jobs:
           driver: docker-container
           driver-opts: network=host
 
-      - name: Build and pull images (Slow)
+      - name: Startup script launch (Slow)
         if: contains(github.base_ref, 'master')
         run: |
           cp docker/env_file_integrations_template docker/env_file_integrations
-          
-          docker buildx bake -f docker/docker-bake.ci.hcl &
-          BAKE_PID=$!
-          ./start ci pull --malware_tools_analyzers --phishing_analyzers -- --ignore-buildable &
-          PULL_PID=$!
-          wait $BAKE_PID
-          wait $PULL_PID
-          
-          ./start ci up --malware_tools_analyzers --phishing_analyzers -- -d
+          ./start ci up --malware_tools_analyzers --phishing_analyzers -- --build -d
         env:
           DOCKER_BUILDKIT: 1
           BUILDKIT_PROGRESS: "plain"
@@ -105,19 +97,15 @@ jobs:
         if: "!contains(github.base_ref, 'master')"
         run: |
           docker buildx bake -f docker/docker-bake.ci.hcl &
-          BAKE_PID=$!
-          ./start ci pull -- --ignore-buildable &
-          PULL_PID=$!
-          wait $BAKE_PID
-          wait $PULL_PID
-          
+          docker pull library/postgres:16-alpine &
+          docker pull library/redis:6.2.7-alpine &
+          wait
           ./start ci up -- -d
         env:
           DOCKER_BUILDKIT: 1
           BUILDKIT_PROGRESS: "plain"
           STAGE: "ci"
           REPO_DOWNLOADER_ENABLED: false
-
       - name: Docker debug
         if: always()
         run: |
