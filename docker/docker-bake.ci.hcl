@@ -7,7 +7,7 @@ group "default" {
 }
 
 target "uwsgi" {
-  context    = ".."
+  context    = "."
   dockerfile = "docker/Dockerfile"
   tags       = ["intelowlproject/intelowl:ci"]
   args = {
@@ -19,7 +19,7 @@ target "uwsgi" {
 }
 
 target "nginx" {
-  context    = ".."
+  context    = "."
   dockerfile = "docker/Dockerfile_nginx"
   tags       = ["intelowlproject/intelowl_nginx:ci"]
   cache-from = ["type=gha,scope=intelowl-nginx"]
