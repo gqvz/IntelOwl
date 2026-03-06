@@ -77,60 +77,46 @@ jobs:
           cp docker/env_file_postgres_template docker/env_file_postgres
 
       - name: Set up Docker Buildx
-        id: setup-buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Restore buildkit cache
-        uses: reproducible-containers/buildkit-cache-dance@v3
         with:
-          builder: ${{ steps.setup-buildx.outputs.name }}
-          cache-map: |
-            {
-              "apt-cache": "/var/cache/apt",
-              "apt-lib": "/var/lib/apt",
-              "pip-cache": "/root/.cache/pip",
-              "npm-cache": "/root/.npm"
-            }
+          driver: docker-container
+          driver-opts: network=host
 
-      - name: Build main image with cache
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: false
-          load: true
-          tags: intelowlproject/intelowl:ci
-          build-args: |
-            REPO_DOWNLOADER_ENABLED=false
-          cache-from: type=gha,scope=intelowl-main
-
-      - name: Build nginx image with cache
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/Dockerfile_nginx
-          push: false
-          load: true
-          tags: intelowlproject/intelowl_nginx:ci
-          cache-from: type=gha,scope=intelowl-nginx
-
-      - name: Startup script launch (Slow)
+      - name: Build and pull images (Slow)
         if: contains(github.base_ref, 'master')
         run: |
           cp docker/env_file_integrations_template docker/env_file_integrations
-          ./start ci up --malware_tools_analyzers --phishing_analyzers -- --build -d
+          
+          docker buildx bake -f docker/docker-bake.ci.hcl &
+          BAKE_PID=$!
+          ./start ci pull --malware_tools_analyzers --phishing_analyzers -- --ignore-buildable &
+          PULL_PID=$!
+          wait $BAKE_PID
+          wait $PULL_PID
+          
+          ./start ci up --malware_tools_analyzers --phishing_analyzers -- -d
         env:
           DOCKER_BUILDKIT: 1
           BUILDKIT_PROGRESS: "plain"
           STAGE: "ci"
           REPO_DOWNLOADER_ENABLED: false
 
-      - name: Startup script launch (Fast)
+      - name: Build and pull images (Fast)
         if: "!contains(github.base_ref, 'master')"
         run: |
+          docker buildx bake -f docker/docker-bake.ci.hcl &
+          BAKE_PID=$!
+          ./start ci pull -- --ignore-buildable &
+          PULL_PID=$!
+          wait $BAKE_PID
+          wait $PULL_PID
+          
           ./start ci up -- -d
         env:
+          DOCKER_BUILDKIT: 1
+          BUILDKIT_PROGRESS: "plain"
           STAGE: "ci"
+          REPO_DOWNLOADER_ENABLED: false
 
       - name: Docker debug
         if: always()
