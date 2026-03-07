@@ -20,6 +20,9 @@ jobs:
       - name: Checkout IntelOwl
         uses: actions/checkout@v6.0.2
 
+      - name: Set image repo
+        run: echo "IMAGE_REPO=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -38,7 +41,7 @@ jobs:
           load: false
           push: false
           set: |
-            uwsgi.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:cache-main,mode=max
-            nginx.cache-to=type=registry,ref=ghcr.io/${{ github.repository }}:cache-nginx,mode=max
+            uwsgi.cache-to=type=registry,ref=${{ env.IMAGE_REPO }}:cache-main,mode=max
+            nginx.cache-to=type=registry,ref=${{ env.IMAGE_REPO }}:cache-nginx,mode=max
         env:
-          CACHE_REPO: ghcr.io/${{ github.repository }}
+          CACHE_REPO: ${{ env.IMAGE_REPO }}
