@@ -78,6 +78,15 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Bake images
         if: "!contains(github.base_ref, 'master')"
@@ -87,6 +96,8 @@ jobs:
           files: docker/docker-bake.ci.hcl
           load: true
           push: false
+        env:
+          CACHE_REPO: ghcr.io/${{ github.repository }}
 
       - name: Startup script launch (Slow)
         if: contains(github.base_ref, 'master')
