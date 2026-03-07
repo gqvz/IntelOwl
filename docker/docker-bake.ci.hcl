@@ -13,18 +13,16 @@ target "uwsgi" {
   args = {
     REPO_DOWNLOADER_ENABLED = REPO_DOWNLOADER_ENABLED
   }
-  cache-from = [{ type = "gha", scope = "intelowl-main" }]
-  cache-to   = [{ type = "gha", scope = "intelowl-main", mode = "max" }]
-  output     = ["type=docker"]
+  cache-from = [{ type = "local", src = "/tmp/.buildx-cache" }]
+  cache-to   = [{ type = "local", dest = "/tmp/.buildx-cache-new", mode = "max" }]
 }
 
 target "nginx" {
   context    = "."
   dockerfile = "docker/Dockerfile_nginx"
   tags       = ["intelowlproject/intelowl_nginx:ci"]
-  cache-from = [{ type = "gha", scope = "intelowl-nginx" }]
-  cache-to   = [{ type = "gha", scope = "intelowl-nginx", mode = "max" }]
-  output     = ["type=docker"]
+  cache-from = [{ type = "local", src = "/tmp/.buildx-cache" }]
+  cache-to   = [{ type = "local", dest = "/tmp/.buildx-cache-new", mode = "max" }]
 }
 
 target "postgres" {
