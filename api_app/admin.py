@@ -55,6 +55,7 @@ class JobAdminView(CustomAdminView):
         "visualizers_executed",
         "get_tags",
     )
+
     list_display_link = (
         "id",
         "user",
