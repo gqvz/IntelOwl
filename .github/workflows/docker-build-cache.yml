@@ -30,16 +30,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-<<<<<<< Updated upstream
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Bake images
-        uses: docker/bake-action@v6
-=======
       - name: Build main image and push cache
         uses: docker/build-push-action@v6
->>>>>>> Stashed changes
         with:
           context: .
           file: docker/Dockerfile
