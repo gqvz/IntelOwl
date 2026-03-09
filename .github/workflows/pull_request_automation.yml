@@ -102,9 +102,11 @@ jobs:
         run: |
           ./start ci up -- --build -d
         env:
+          DOCKER_BUILDKIT: 1
+          BUILDKIT_PROGRESS: "plain"
           STAGE: "ci"
-          CACHE_REPO: ${{ env.IMAGE_REPO }}
-
+          REPO_DOWNLOADER_ENABLED: false
+          
       - name: Docker debug
         if: always()
         run: |
