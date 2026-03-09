@@ -107,9 +107,6 @@ class PluginActionViewsetTestCase(metaclass=ABCMeta):
     @property
     @abstractmethod
     def plugin_type(self):
-        """
-        plugin type
-        """
         raise NotImplementedError()
 
     def tearDown(self):
